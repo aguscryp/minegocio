@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MiNegocio - Software Empresarial</title>
   <style>
+    /* 🎨 Estilos empresariales y animaciones */
     :root {
       --bg: #eef2f7;
       --primary: #004aad;
@@ -238,8 +239,7 @@
     <a onclick="mostrarSeccion('calendario')">Calendario</a>
     <a onclick="mostrarSeccion('deposito')">Depósito</a>
   </nav>
-  <div class="container">
-    <section id="clientes" class="active">
+  <div class="container">    <section id="clientes" class="active">
       <h2>👥 Registro de Cliente</h2>
       <input type="text" id="nombre" placeholder="Nombre y Apellido" />
       <input type="text" id="dni" placeholder="DNI" />
@@ -275,16 +275,14 @@
     <section id="deposito">
       <h2>📦 Clientes en Depósito</h2>
       <div id="listaDeposito"></div>
-    </section>
-  </div>
-
-  <!-- Modal para edición, cuotas, vencimientos -->
+    </section>   <!-- Modal para edición, cuotas, vencimientos -->
   <div class="modal" id="modal">
     <div class="modal-content" id="modalContent"></div>
   </div>
 
   <!-- Alerta animada -->
   <div id="alerta" class="alerta" style="display:none;">🎉 Cliente agregado con éxito</div>
+</div> <!-- cierre del contenedor principal -->
 <script>
   let clientes = [];
   let deposito = [];
@@ -309,8 +307,7 @@
     alerta.style.display = "block";
     setTimeout(() => alerta.style.display = "none", 3000);
   }
-
-  function agregarCliente() {
+    function agregarCliente() {
     const nombre = document.getElementById("nombre").value;
     const dni = document.getElementById("dni").value;
     const whatsapp = document.getElementById("whatsapp").value;
@@ -422,7 +419,6 @@
     cerrarModal();
     actualizarVista();
   }
-
   function verCuotas(index) {
     const c = clientes[index];
     const modal = document.getElementById("modal");
@@ -499,7 +495,8 @@
     const year = base.getFullYear();
     const month = base.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const nombreMes = base.toLocaleString    const nombreMes = base.toLocaleString('es-ES', { month: 'long' });
+    const nombreMes = base.toLocaleString('es-ES', { month: 'long' });
+
     mesTexto.innerText = `${nombreMes.toUpperCase()} ${year}`;
 
     for (let i = 1; i <= daysInMonth; i++) {
@@ -562,4 +559,7 @@
 </script>
 </body>
 </html>
+
+
+
 

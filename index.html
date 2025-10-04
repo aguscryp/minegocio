@@ -273,7 +273,6 @@
     </section>
 
     <section id="deposito">
-      <h2    <section id="deposito">
       <h2>📦 Clientes en Depósito</h2>
       <div id="listaDeposito"></div>
     </section>
@@ -361,7 +360,6 @@
       card.className = "card";
       const totalCliente = c.montoCuota * c.cuotas;
       const vencimientoProximo = c.vencimientos.find(v => v.estado === "Pendiente");
-      const fechaHoy = new Date().toISOString().split('T')[0];
       const fechaDosDias = new Date();
       fechaDosDias.setDate(new Date().getDate() + 2);
       const fechaDosDiasStr = fechaDosDias.toISOString().split('T')[0];
@@ -481,7 +479,7 @@
       });
     });
     const hoyDiv = document.getElementById("vencimientosHoy");
-    hoyDiv.innerHTML = vencimientos.length ?    hoyDiv.innerHTML = vencimientos.length
+    hoyDiv.innerHTML = vencimientos.length
       ? vencimientos.join("<br>")
       : "Sin vencimientos hoy.";
   }
@@ -501,8 +499,7 @@
     const year = base.getFullYear();
     const month = base.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const nombreMes = base.toLocaleString('es-ES', { month: 'long' });
-
+    const nombreMes = base.toLocaleString    const nombreMes = base.toLocaleString('es-ES', { month: 'long' });
     mesTexto.innerText = `${nombreMes.toUpperCase()} ${year}`;
 
     for (let i = 1; i <= daysInMonth; i++) {

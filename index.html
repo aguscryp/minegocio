@@ -3,255 +3,214 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Control Celulares</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <title>MiNegocio - Control Total</title>
   <style>
-    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #e9ecef;
+      background: #f4f6f9;
       color: #333;
     }
     header {
-      background: #003366;
+      background: #1f2937;
       color: white;
-      padding: 15px 20px;
+      padding: 1em;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    header h1 {
-      margin: 0;
-      font-size: 22px;
-    }
     .menu-toggle {
-      font-size: 24px;
+      font-size: 1.5em;
       cursor: pointer;
     }
     nav {
       display: none;
-      flex-direction: column;
-      background: #002244;
+      background: #111827;
+      color: white;
+      padding: 1em;
     }
     nav a {
+      display: block;
       color: white;
-      padding: 12px 20px;
       text-decoration: none;
-      border-top: 1px solid #003366;
-    }
-    nav a:hover {
-      background: #001122;
+      margin: 0.5em 0;
     }
     .container {
-      padding: 20px;
-      max-width: 900px;
-      margin: auto;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-top: 20px;
+      padding: 1em;
     }
-    h2 {
-      text-align: center;
-      color: #003366;
-      margin-bottom: 20px;
-    }
-    form {
-      display: grid;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    input, textarea {
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+    input, select {
+      padding: 0.5em;
+      margin: 0.5em 0;
       width: 100%;
+      box-sizing: border-box;
     }
     button {
-      padding: 10px;
-      background: #28a745;
+      padding: 0.7em;
+      background: #2563eb;
       color: white;
       border: none;
-      border-radius: 5px;
       cursor: pointer;
-      transition: background 0.3s;
+      margin-top: 1em;
     }
-    button:hover {
-      background: #218838;
+    .card {
+      background: white;
+      padding: 1em;
+      margin: 1em 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      margin-top: 1em;
     }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      font-size: 14px;
+    .day {
+      background: white;
+      padding: 1em;
+      text-align: center;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    th {
-      background: #003366;
-      color: white;
-    }
-    .total {
-      font-weight: bold;
-      margin-top: 10px;
-      text-align: right;
-    }
-    .whatsapp-btn {
-      background: #25D366;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    @media (max-width: 600px) {
-      nav a { text-align: center; }
-      form, table { font-size: 14px; }
-      .container { padding: 10px; }
+    .highlight {
+      background: #fde68a;
     }
   </style>
 </head>
 <body>
+  <header>
+    <h1>📱 MiNegocio</h1>
+    <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+  </header>
+  <nav id="menu">
+    <a href="#hoy">HOY</a>
+    <a href="#clientes">Clientes</a>
+    <a href="#facturacion">Facturación</a>
+    <a href="#calendario">Calendario</a>
+  </nav>
 
-<header>
-  <h1><i class="fas fa-mobile-alt"></i> Control Celulares</h1>
-  <div class="menu-toggle" onclick="toggleMenu()">☰</div>
-</header>
-<nav id="menu">
-  <a href="#ventas">Registrar Venta</a>
-  <a href="#encargues">Encargues</a>
-  <a href="#vencimientos">Vencimientos</a>
-</nav>
+  <div class="container">
+    <section id="clientes">
+      <h2>📋 Cargar Cliente</h2>
+      <input type="text" id="nombre" placeholder="Nombre y Apellido" />
+      <input type="text" id="dni" placeholder="DNI" />
+      <input type="text" id="whatsapp" placeholder="WhatsApp" />
+      <input type="number" id="cuotas" placeholder="Cantidad de cuotas" />
+      <input type="date" id="fechaInicio" />
+      <button onclick="agregarCliente()">Agregar Cliente</button>
+    </section>
 
-<div class="container" id="ventas">
-  <h2>Registrar Venta</h2>
-  <form id="ventaForm">
-    <input type="text" placeholder="Nombre y Apellido" required />
-    <input type="text" placeholder="DNI" required />
-    <input type="text" placeholder="WhatsApp" required />
-    <input type="text" placeholder="Celular Vendido" required />
-    <input type="number" placeholder="Cantidad de Cuotas" required />
-    <input type="number" placeholder="Monto por Cuota (ARS)" required />
-    <input type="text" placeholder="Fechas de Pago (separadas por coma)" required />
-    <button type="submit">Guardar Venta</button>
-  </form>
-  <table id="ventasTable">
-    <thead>
-      <tr>
-        <th>Cliente</th>
-        <th>DNI</th>
-        <th>WhatsApp</th>
-        <th>Celular</th>
-        <th>Cuotas</th>
-        <th>Monto</th>
-        <th>Fechas</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-  <div class="total" id="totalVentas">💰 Total de todas las cuotas: $0</div>
-</div>
+    <section id="facturacion">
+      <h2>💰 Facturación Total</h2>
+      <div id="totalFacturacion">Total: $0</div>
+      <div id="listaClientes"></div>
+    </section>
 
-<div class="container" id="encargues">
-  <h2>Encargues</h2>
-  <form id="encargueForm">
-    <input type="text" placeholder="Nombre del Cliente" required />
-    <textarea placeholder="Detalle del Encargue" required></textarea>
-    <button type="submit">Guardar Encargue</button>
-  </form>
-  <table id="encarguesTable">
-    <thead>
-      <tr>
-        <th>Cliente</th>
-        <th>Encargue</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
+    <section id="hoy">
+      <h2>📆 Vencimientos de Hoy</h2>
+      <div id="vencimientosHoy"></div>
+    </section>
 
-<div class="container" id="vencimientos">
-  <h2>Vencimientos del Día</h2>
-  <table id="vencimientosTable">
-    <thead>
-      <tr>
-        <th>Cliente</th>
-        <th>WhatsApp</th>
-        <th>Fecha</th>
-        <th>Acción</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
+    <section id="calendario">
+      <h2>🗓️ Calendario</h2>
+      <div class="calendar" id="calendarioGrid"></div>
+    </section>
+  </div>
 
-<script>
-  function toggleMenu() {
-    const menu = document.getElementById('menu');
-    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-  }
+  <script>
+    let clientes = [];
+    let totalFacturado = 0;
 
-  const ventaForm = document.getElementById('ventaForm');
-  const ventasTable = document.querySelector('#ventasTable tbody');
-  const totalVentas = document.getElementById('totalVentas');
-  const vencimientosTable = document.querySelector('#vencimientosTable tbody');
+    function toggleMenu() {
+      const menu = document.getElementById("menu");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
 
-  let total = 0;
-  let ventas = JSON.parse(localStorage.getItem('ventas')) || [];
+    function agregarCliente() {
+      const nombre = document.getElementById("nombre").value;
+      const dni = document.getElementById("dni").value;
+      const whatsapp = document.getElementById("whatsapp").value;
+      const cuotas = parseInt(document.getElementById("cuotas").value);
+      const fechaInicio = new Date(document.getElementById("fechaInicio").value);
 
-  function renderVentas() {
-    ventasTable.innerHTML = '';
-    vencimientosTable.innerHTML = '';
-    total = 0;
-    const hoy = new Date().toISOString().split('T')[0];
+      if (!nombre || !dni || !whatsapp || !cuotas || isNaN(fechaInicio)) return alert("Completa todos los campos");
 
-    ventas.forEach(v => {
-      const row = document.createElement('tr');
-      [v.nombre, v.dni, v.whatsapp, v.celular, v.cuotas, `$${v.monto.toFixed(2)}`, v.fechas.join(', ')].forEach(val => {
-        const cell = document.createElement('td');
-        cell.textContent = val;
-        row.appendChild(cell);
+      const cliente = {
+        nombre, dni, whatsapp, cuotas, vencimientos: []
+      };
+
+      for (let i = 0; i < cuotas; i++) {
+        const fecha = new Date(fechaInicio);
+        fecha.setMonth(fecha.getMonth() + i);
+        cliente.vencimientos.push({
+          cuota: i + 1,
+          fecha: fecha.toISOString().split('T')[0],
+          monto: 10000
+        });
+        totalFacturado += 10000;
+      }
+
+      clientes.push(cliente);
+      actualizarVista();
+    }
+
+    function actualizarVista() {
+      document.getElementById("totalFacturacion").innerText = `Total: $${totalFacturado}`;
+      const lista = document.getElementById("listaClientes");
+      lista.innerHTML = "";
+      clientes.forEach(c => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `<strong>${c.nombre}</strong><br>DNI: ${c.dni}<br>WhatsApp: ${c.whatsapp}<br>Cuotas: ${c.cuotas}<br>${c.vencimientos.map(v => `Cuota ${v.cuota}: ${v.fecha} - $${v.monto}`).join("<br>")}`;
+        lista.appendChild(card);
       });
-      ventasTable.appendChild(row);
-      total += v.monto * v.cuotas;
 
-      v.fechas.forEach(f => {
-        if (f.trim() === hoy) {
-          const vencRow = document.createElement('tr');
-          [v.nombre, v.whatsapp, f].forEach(val => {
-            const cell = document.createElement('td');
-            cell.textContent = val;
-            vencRow.appendChild(cell);
+      actualizarVencimientosHoy();
+      actualizarCalendario();
+    }
+
+    function actualizarVencimientosHoy() {
+      const hoy = new Date().toISOString().split('T')[0];
+      const vencimientos = [];
+      clientes.forEach(c => {
+        c.vencimientos.forEach(v => {
+          if (v.fecha === hoy) {
+            vencimientos.push(`${c.nombre} - Cuota ${v.cuota} - $${v.monto}`);
+          }
+        });
+      });
+      const hoyDiv = document.getElementById("vencimientosHoy");
+      hoyDiv.innerHTML = vencimientos.length ? vencimientos.join("<br>") : "Sin vencimientos hoy.";
+    }
+
+    function actualizarCalendario() {
+      const grid = document.getElementById("calendarioGrid");
+      grid.innerHTML = "";
+      const hoy = new Date();
+      const year = hoy.getFullYear();
+      const month = hoy.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 1; i <= daysInMonth; i++) {
+        const fecha = new Date(year, month, i).toISOString().split('T')[0];
+        const vencimientos = [];
+        clientes.forEach(c => {
+          c.vencimientos.forEach(v => {
+            if (v.fecha === fecha) vencimientos.push(c.nombre);
           });
-          const actionCell = document.createElement('td');
-          const btn = document.createElement('button');
-          btn.className = 'whatsapp-btn';
-          btn.textContent = 'Enviar';
-          btn.onclick = () => {
-            const mensaje = `Hola ${v.nombre}, recordá que hoy vence tu cuota del celular.`;
-            window.open(`https://wa.me/${v.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(mensaje)}`);
-          };
-          actionCell.appendChild(btn);
-          vencRow.appendChild(actionCell);
-          vencimientosTable.appendChild(vencRow);
-        }
-      });
-    });
+        });
 
-    totalVentas.textContent = `💰 Total de todas las cuotas: $${total.toFixed(2)}`;
-  }
+        const day = document.createElement("div");
+        day.className = "day " + (fecha === hoy.toISOString().split('T')[0] ? "highlight" : "");
+        day.innerHTML = `${i}${vencimientos.length ? " 🔔" : ""}`;
+        grid.appendChild(day);
+      }
+    }
 
-  ventaForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const inputs = ventaForm.querySelectorAll('input');
-    const nombre = inputs[0].value;
-    const dni = inputs[1].value;
-    const whatsapp = inputs[2].value;
-    const celular = inputs[3].value;
-    const cuotas = parseInt(inputs[4].value);
-    const monto = parseFloat(inputs[5].value);
-    const fechas = inputs[6].value.split(',').map(f => f.trim
+    window.onload = () => {
+      actualizarCalendario();
+    };
+  </script>
+</body>
+</html>
+

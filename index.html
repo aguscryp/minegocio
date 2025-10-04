@@ -5,75 +5,120 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MiNegocio - Control Total</title>
   <style>
+    :root {
+      --color-bg: #f4f6f9;
+      --color-primary: #2563eb;
+      --color-dark: #1f2937;
+      --color-light: #ffffff;
+      --color-accent: #fde68a;
+      --font-main: 'Segoe UI', sans-serif;
+    }
+
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f6f9;
+      font-family: var(--font-main);
+      background: var(--color-bg);
       color: #333;
     }
+
     header {
-      background: #1f2937;
-      color: white;
+      background: var(--color-dark);
+      color: var(--color-light);
       padding: 1em;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
+
     .menu-toggle {
       font-size: 1.5em;
       cursor: pointer;
     }
+
     nav {
       display: none;
       background: #111827;
-      color: white;
+      color: var(--color-light);
       padding: 1em;
     }
+
     nav a {
       display: block;
-      color: white;
+      color: var(--color-light);
       text-decoration: none;
       margin: 0.5em 0;
     }
+
     .container {
       padding: 1em;
+      max-width: 900px;
+      margin: auto;
     }
+
+    section {
+      margin-bottom: 2em;
+    }
+
+    h2 {
+      margin-bottom: 0.5em;
+      color: var(--color-dark);
+    }
+
     input, select {
       padding: 0.5em;
       margin: 0.5em 0;
       width: 100%;
       box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
+
     button {
-      padding: 0.7em;
-      background: #2563eb;
-      color: white;
+      padding: 0.7em 1.2em;
+      background: var(--color-primary);
+      color: var(--color-light);
       border: none;
+      border-radius: 4px;
       cursor: pointer;
-      margin-top: 1em;
+      transition: background 0.3s;
     }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
     .card {
-      background: white;
+      background: var(--color-light);
       padding: 1em;
       margin: 1em 0;
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
+
     .calendar {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       gap: 5px;
       margin-top: 1em;
     }
+
     .day {
-      background: white;
+      background: var(--color-light);
       padding: 1em;
       text-align: center;
       border-radius: 6px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      font-size: 0.9em;
     }
+
     .highlight {
-      background: #fde68a;
+      background: var(--color-accent);
+    }
+
+    .calendar-header {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 1em;
     }
   </style>
 </head>
@@ -96,6 +141,7 @@
       <input type="text" id="dni" placeholder="DNI" />
       <input type="text" id="whatsapp" placeholder="WhatsApp" />
       <input type="number" id="cuotas" placeholder="Cantidad de cuotas" />
+      <input type="number" id="montoCuota" placeholder="Monto por cuota ($)" />
       <input type="date" id="fechaInicio" />
       <button onclick="agregarCliente()">Agregar Cliente</button>
     </section>
@@ -113,6 +159,7 @@
 
     <section id="calendario">
       <h2>🗓️ Calendario</h2>
+      <div class="calendar-header" id="mesActual"></div>
       <div class="calendar" id="calendarioGrid"></div>
     </section>
   </div>
@@ -131,12 +178,15 @@
       const dni = document.getElementById("dni").value;
       const whatsapp = document.getElementById("whatsapp").value;
       const cuotas = parseInt(document.getElementById("cuotas").value);
+      const montoCuota = parseFloat(document.getElementById("montoCuota").value);
       const fechaInicio = new Date(document.getElementById("fechaInicio").value);
 
-      if (!nombre || !dni || !whatsapp || !cuotas || isNaN(fechaInicio)) return alert("Completa todos los campos");
+      if (!nombre || !dni || !whatsapp || !cuotas || !montoCuota || isNaN(fechaInicio)) {
+        return alert("Completa todos los campos correctamente");
+      }
 
       const cliente = {
-        nombre, dni, whatsapp, cuotas, vencimientos: []
+        nombre, dni, whatsapp, cuotas, montoCuota, vencimientos: []
       };
 
       for (let i = 0; i < cuotas; i++) {
@@ -145,9 +195,9 @@
         cliente.vencimientos.push({
           cuota: i + 1,
           fecha: fecha.toISOString().split('T')[0],
-          monto: 10000
+          monto: montoCuota
         });
-        totalFacturado += 10000;
+        totalFacturado += montoCuota;
       }
 
       clientes.push(cliente);
@@ -155,13 +205,21 @@
     }
 
     function actualizarVista() {
-      document.getElementById("totalFacturacion").innerText = `Total: $${totalFacturado}`;
+      document.getElementById("totalFacturacion").innerText = `Total: $${totalFacturado.toLocaleString()}`;
       const lista = document.getElementById("listaClientes");
       lista.innerHTML = "";
       clientes.forEach(c => {
         const card = document.createElement("div");
         card.className = "card";
-        card.innerHTML = `<strong>${c.nombre}</strong><br>DNI: ${c.dni}<br>WhatsApp: ${c.whatsapp}<br>Cuotas: ${c.cuotas}<br>${c.vencimientos.map(v => `Cuota ${v.cuota}: ${v.fecha} - $${v.monto}`).join("<br>")}`;
+        const totalCliente = c.montoCuota * c.cuotas;
+        card.innerHTML = `
+          <strong>${c.nombre}</strong><br>
+          DNI: ${c.dni}<br>
+          WhatsApp: ${c.whatsapp}<br>
+          Cuotas: ${c.cuotas} x $${c.montoCuota.toLocaleString()}<br>
+          Total: $${totalCliente.toLocaleString()}<br><br>
+          ${c.vencimientos.map(v => `Cuota ${v.cuota}: ${v.fecha} - $${v.monto.toLocaleString()}`).join("<br>")}
+        `;
         lista.appendChild(card);
       });
 
@@ -175,7 +233,7 @@
       clientes.forEach(c => {
         c.vencimientos.forEach(v => {
           if (v.fecha === hoy) {
-            vencimientos.push(`${c.nombre} - Cuota ${v.cuota} - $${v.monto}`);
+            vencimientos.push(`${c.nombre} - Cuota ${v.cuota} - $${v.monto.toLocaleString()}`);
           }
         });
       });
@@ -185,16 +243,21 @@
 
     function actualizarCalendario() {
       const grid = document.getElementById("calendarioGrid");
+      const mesActual = document.getElementById("mesActual");
       grid.innerHTML = "";
+
       const hoy = new Date();
       const year = hoy.getFullYear();
       const month = hoy.getMonth();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const nombreMes = hoy.toLocaleString('es-ES', { month: 'long' });
+
+      mesActual.innerText = `${nombreMes.toUpperCase()} ${year}`;
 
       for (let i = 1; i <= daysInMonth; i++) {
         const fecha = new Date(year, month, i).toISOString().split('T')[0];
         const vencimientos = [];
-        clientes.forEach(c => {
+               clientes.forEach(c => {
           c.vencimientos.forEach(v => {
             if (v.fecha === fecha) vencimientos.push(c.nombre);
           });
@@ -202,7 +265,10 @@
 
         const day = document.createElement("div");
         day.className = "day " + (fecha === hoy.toISOString().split('T')[0] ? "highlight" : "");
-        day.innerHTML = `${i}${vencimientos.length ? " 🔔" : ""}`;
+        day.innerHTML = `
+          <div>${i}</div>
+          ${vencimientos.length ? `<div style="color:#2563eb; font-size:0.8em;">${vencimientos.join(", ")}</div>` : ""}
+        `;
         grid.appendChild(day);
       }
     }

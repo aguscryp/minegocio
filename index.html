@@ -6,14 +6,15 @@
   <title>MiNegocio - Software Empresarial</title>
   <style>
     :root {
-      --bg: #f0f2f5;
-      --primary: #0052cc;
-      --secondary: #172b4d;
+      --bg: #eef2f7;
+      --primary: #004aad;
+      --secondary: #1c1c1c;
       --accent: #ffab00;
       --light: #ffffff;
       --font: 'Segoe UI', sans-serif;
       --success: #36b37e;
       --danger: #ff5630;
+      --info: #00b8d9;
     }
 
     body {
@@ -30,6 +31,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    header h1 {
+      font-weight: 600;
+      font-size: 1.8em;
     }
 
     .menu-toggle {
@@ -183,7 +189,7 @@
 </head>
 <body>
   <header>
-    <h1>📊 MiNegocio</h1>
+    <h1><span style="color:#ffab00;">▣</span> MiNegocio</h1>
     <div class="menu-toggle" onclick="toggleMenu()">☰</div>
   </header>
   <nav id="menu">
@@ -191,10 +197,9 @@
     <a onclick="mostrarSeccion('facturacion')">Facturación</a>
     <a onclick="mostrarSeccion('hoy')">Vencimientos Hoy</a>
     <a onclick="mostrarSeccion('calendario')">Calendario</a>
+    <a onclick="mostrarSeccion('deposito')">Depósito</a>
   </nav>
-
   <div class="container">
-    <!-- Secciones dinámicas aquí -->
     <section id="clientes" class="active">
       <h2>👥 Gestión de Clientes</h2>
       <input type="text" id="nombre" placeholder="Nombre y Apellido" />
@@ -219,221 +224,282 @@
 
     <section id="calendario">
       <h2>🗓️ Calendario Mensual</h2>
-      <div class="calendar-header" id="mesActual"></div>
+      <div class="calendar-header" id="mesActual">
+        <button onclick="cambiarMes(-1)">◀</button>
+        <span id="mesTexto"></span>
+        <button onclick="cambiarMes(1)">▶</button>
+      </div>
       <div class="calendar" id="calendarioGrid"></div>
+    </section>
+
+    <section id="deposito">
+      <h2>📦 Clientes en Depósito</h2>
+      <div id="listaDeposito"></div>
     </section>
   </div>
 
-  <!-- Modal para edición y cuotas -->
   <div class="modal" id="modal">
-    <div class="modal-content" id="modalContent">
-      <!-- Se llena dinámicamente -->
-    </div>
+    <div class="modal-content" id="modalContent"></div>
   </div>
-  <script>
-    let clientes = [];
-    let totalFacturado = 0;
-    let clienteEditando = null;
+<script>
+  let clientes = [];
+  let deposito = [];
+  let totalFacturado = 0;
+  let clienteEditando = null;
+  let mesOffset = 0;
 
-    function toggleMenu() {
-      const menu = document.getElementById("menu");
-      menu.style.display = menu.style.display === "block" ? "none" : "block";
+  function toggleMenu() {
+    const menu = document.getElementById("menu");
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
+  }
+
+  function mostrarSeccion(id) {
+    document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    document.getElementById("menu").style.display = "none";
+  }
+
+  function agregarCliente() {
+    const nombre = document.getElementById("nombre").value;
+    const dni = document.getElementById("dni").value;
+    const whatsapp = document.getElementById("whatsapp").value;
+    const cuotas = parseInt(document.getElementById("cuotas").value);
+    const montoCuota = parseFloat(document.getElementById("montoCuota").value);
+    const fechaInicio = new Date(document.getElementById("fechaInicio").value);
+
+    if (!nombre || !dni || !whatsapp || !cuotas || !montoCuota || isNaN(fechaInicio)) {
+      return alert("Completa todos los campos correctamente");
     }
 
-    function mostrarSeccion(id) {
-      document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-      document.getElementById("menu").style.display = "none";
-    }
+    const cliente = {
+      nombre, dni, whatsapp, cuotas, montoCuota, vencimientos: []
+    };
 
-    function agregarCliente() {
-      const nombre = document.getElementById("nombre").value;
-      const dni = document.getElementById("dni").value;
-      const whatsapp = document.getElementById("whatsapp").value;
-      const cuotas = parseInt(document.getElementById("cuotas").value);
-      const montoCuota = parseFloat(document.getElementById("montoCuota").value);
-      const fechaInicio = new Date(document.getElementById("fechaInicio").value);
-
-      if (!nombre || !dni || !whatsapp || !cuotas || !montoCuota || isNaN(fechaInicio)) {
-        return alert("Completa todos los campos correctamente");
-      }
-
-      const cliente = {
-        nombre, dni, whatsapp, cuotas, montoCuota, vencimientos: []
-      };
-
-      for (let i = 0; i < cuotas; i++) {
-        const fecha = new Date(fechaInicio);
-        fecha.setMonth(fecha.getMonth() + i);
-        cliente.vencimientos.push({
-          cuota: i + 1,
-          fecha: fecha.toISOString().split('T')[0],
-          monto: montoCuota,
-          estado: "Pendiente"
-        });
-        totalFacturado += montoCuota;
-      }
-
-      clientes.push(cliente);
-      limpiarFormulario();
-      actualizarVista();
-      mostrarSeccion('facturacion');
-    }
-
-    function limpiarFormulario() {
-      ["nombre", "dni", "whatsapp", "cuotas", "montoCuota", "fechaInicio"].forEach(id => {
-        document.getElementById(id).value = "";
+    for (let i = 0; i < cuotas; i++) {
+      const fecha = new Date(fechaInicio);
+      fecha.setMonth(fecha.getMonth() + i);
+      cliente.vencimientos.push({
+        cuota: i + 1,
+        fecha: fecha.toISOString().split('T')[0],
+        monto: montoCuota,
+        estado: "Pendiente"
       });
+      totalFacturado += montoCuota;
     }
 
-    function actualizarVista() {
-      document.getElementById("totalFacturacion").innerText = `Total: $${totalFacturado.toLocaleString()}`;
-      const lista = document.getElementById("listaClientes");
-      lista.innerHTML = "";
-      clientes.forEach((c, index) => {
-        const card = document.createElement("div");
-        card.className = "card";
-        const totalCliente = c.montoCuota * c.cuotas;
-        card.innerHTML = `
-          <div class="card-actions">
-            <button onclick="editarCliente(${index})">✏️ Editar</button>
-            <button onclick="verCuotas(${index})">📄 Cuotas</button>
-          </div>
-          <strong>${c.nombre}</strong><br>
-          DNI: ${c.dni}<br>
-          WhatsApp: ${c.whatsapp}<br>
-          Cuotas: ${c.cuotas} x $${c.montoCuota.toLocaleString()}<br>
-          Total: $${totalCliente.toLocaleString()}
-        `;
-        lista.appendChild(card);
-      });
+    clientes.push(cliente);
+    limpiarFormulario();
+    actualizarVista();
+    mostrarSeccion('facturacion');
+  }
 
-      actualizarVencimientosHoy();
-      actualizarCalendario();
-    }
+  function limpiarFormulario() {
+    ["nombre", "dni", "whatsapp", "cuotas", "montoCuota", "fechaInicio"].forEach(id => {
+      document.getElementById(id).value = "";
+    });
+  }
 
-    function editarCliente(index) {
-      clienteEditando = index;
-      const c = clientes[index];
-      const modal = document.getElementById("modal");
-      const content = document.getElementById("modalContent");
-      content.innerHTML = `
-        <h3>Editar Cliente</h3>
-        <input type="text" id="editNombre" value="${c.nombre}" />
-        <input type="text" id="editDni" value="${c.dni}" />
-        <input type="text" id="editWhatsapp" value="${c.whatsapp}" />
-        <button onclick="guardarEdicion()">Guardar Cambios</button>
-        <button onclick="cerrarModal()">Cancelar</button>
+  function actualizarVista() {
+    document.getElementById("totalFacturacion").innerText = `Total: $${totalFacturado.toLocaleString()}`;
+    const lista = document.getElementById("listaClientes");
+    lista.innerHTML = "";
+    clientes.forEach((c, index) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      const totalCliente = c.montoCuota * c.cuotas;
+      card.innerHTML = `
+        <div class="card-actions">
+          <button onclick="editarCliente(${index})">✏️ Editar</button>
+          <button onclick="verCuotas(${index})">📄 Cuotas</button>
+          <button onclick="moverADeposito(${index})">📦 Depositar</button>
+        </div>
+        <strong>👤 ${c.nombre}</strong><br>
+        DNI: ${c.dni}<br>
+        WhatsApp: ${c.whatsapp}<br>
+        Cuotas: ${c.cuotas} x $${c.montoCuota.toLocaleString()}<br>
+        Total: $${totalCliente.toLocaleString()}
       `;
-      modal.style.display = "flex";
-    }
+      lista.appendChild(card);
+    });
 
-    function guardarEdicion() {
-      const c = clientes[clienteEditando];
-      c.nombre = document.getElementById("editNombre").value;
-      c.dni = document.getElementById("editDni").value;
-      c.whatsapp = document.getElementById("editWhatsapp").value;
-      cerrarModal();
-      actualizarVista();
-    }
+    actualizarVencimientosHoy();
+    actualizarCalendario();
+    actualizarDeposito();
+  }
 
-    function verCuotas(index) {
-      const c = clientes[index];
-      const modal = document.getElementById("modal");
-      const content = document.getElementById("modalContent");
-      content.innerHTML = `<h3>Cuotas de ${c.nombre}</h3>`;
-      c.vencimientos.forEach((v, i) => {
-        content.innerHTML += `
-          <div>
-            Cuota ${v.cuota} - ${v.fecha} - $${v.monto.toLocaleString()}
-            <span class="status ${v.estado.toLowerCase()}">${v.estado}</span>
-            ${v.estado !== "Pagada" ? `<button onclick="marcarPagada(${index}, ${i})">✅ Pagar</button>` : ""}
-          </div>
-        `;
+  function editarCliente(index) {
+    clienteEditando = index;
+    const c = clientes[index];
+    const modal = document.getElementById("modal");
+    const content = document.getElementById("modalContent");
+    content.innerHTML = `
+      <h3>Editar Cliente</h3>
+      <input type="text" id="editNombre" value="${c.nombre}" />
+      <input type="text" id="editDni" value="${c.dni}" />
+      <input type="text" id="editWhatsapp" value="${c.whatsapp}" />
+      <button onclick="guardarEdicion()">Guardar Cambios</button>
+      <button onclick="cerrarModal()">Cancelar</button>
+    `;
+    modal.style.display = "flex";
+  }
+
+  function guardarEdicion() {
+    const c = clientes[clienteEditando];
+    c.nombre = document.getElementById("editNombre").value;
+    c.dni = document.getElementById("editDni").value;
+    c.whatsapp = document.getElementById("editWhatsapp").value;
+    cerrarModal();
+    actualizarVista();
+  }
+
+  function verCuotas(index) {
+    const c = clientes[index];
+    const modal = document.getElementById("modal");
+    const content = document.getElementById("modalContent");
+    content.innerHTML = `<h3>Cuotas de ${c.nombre}</h3>`;
+    c.vencimientos.forEach((v, i) => {
+      content.innerHTML += `
+        <div>
+          Cuota ${v.cuota} - ${v.fecha} - $${v.monto.toLocaleString()}
+          <span class="status ${v.estado.toLowerCase()}">${v.estado}</span>
+          ${v.estado !== "Pagada" ? `<button onclick="marcarPagada(${index}, ${i})">✅ Pagar</button>` : ""}
+        </div>
+      `;
+    });
+    content.innerHTML += `<br><button onclick="cerrarModal()">Cerrar</button>`;
+    modal.style.display = "flex";
+  }
+
+  function marcarPagada(clienteIndex, cuotaIndex) {
+    clientes[clienteIndex].vencimientos[cuotaIndex].estado = "Pagada";
+    cerrarModal();
+    actualizarVista();
+  }
+
+  function cerrarModal() {
+    document.getElementById("modal").style.display = "none";
+  }
+
+  function moverADeposito(index) {
+    const cliente = clientes.splice(index, 1)[0];
+    deposito.push(cliente);
+    actualizarVista();
+  }
+
+  function actualizarDeposito() {
+    const contenedor = document.getElementById("listaDeposito");
+    contenedor.innerHTML = "";
+    deposito.forEach(c => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `<strong>👤 ${c.nombre}</strong><br>DNI: ${c.dni}<br>WhatsApp: ${c.whatsapp}<br>Estado: Finalizado`;
+      contenedor.appendChild(card);
+    });
+  }
+
+  function actualizarVencimientosHoy() {
+    const hoy = new Date().toISOString().split('T')[0];
+    const vencimientos = [];
+    clientes.forEach(c => {
+      c.vencimientos.forEach(v => {
+        if (v.fecha === hoy && v.estado !== "Pagada") {
+          vencimientos.push(`${c.nombre} - Cuota ${v.cuota} - $${v.monto.toLocaleString()} - ${v.estado}`);
+        }
       });
-      content.innerHTML += `<br><button onclick="cerrarModal()">Cerrar</button>`;
-      modal.style.display = "flex";
-    }
+    });
+    const hoyDiv = document.getElementById("vencimientosHoy");
+    hoyDiv.innerHTML = vencimientos.length ? vencimientos.join("<br>") : "Sin vencimientos hoy.";
+  }
 
-    function marcarPagada(clienteIndex, cuotaIndex) {
-      clientes[clienteIndex].vencimientos[cuotaIndex].estado = "Pagada";
-      cerrarModal();
-      actualizarVista();
-    }
+  function cambiarMes(direccion) {
+    mesOffset += direccion;
+    actualizarCalendario();
+  }
 
-    function cerrarModal() {
-      document.getElementById("modal").style.display = "none";
-    }
+  function actualizarCalendario() {
+    const grid = document.getElementById("calendarioGrid");
+    const mesTexto = document.getElementById("mesTexto");
+    grid.innerHTML = "";
 
-    function actualizarVencimientosHoy() {
-      const hoy = new Date().toISOString().split('T')[0];
+    const base = new Date();
+    base.setMonth(base.getMonth() + mesOffset);
+    const year = base.getFullYear();
+    const month = base.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const nombreMes = base.toLocaleString('es-ES', { month: 'long' });
+
+    mesTexto.innerText = `${nombreMes.toUpperCase()} ${year}`;
+
+    for (let i = 1; i <= daysInMonth; i++) {
+      const fecha = new Date(year, month, i).toISOString().split('T')[0];
       const vencimientos = [];
-      clientes.forEach(c => {
-        c.vencimientos.forEach(v => {
-          if (v.fecha === hoy && v.estado !== "Pagada") {
-            vencimientos.push(`${c.nombre} - Cuota ${v.cuota} - $${v.monto.toLocaleString()} - ${v.estado}`);
+
+      clientes.forEach((c, ci) => {
+        c.vencimientos.forEach((v, vi) => {
+          if (v.fecha === fecha && v.estado !== "Pagada") {
+            vencimientos.push({ nombre: c.nombre, cuota: v.cuota, monto: v.monto, estado: v.estado, ci, vi });
           }
         });
       });
-      const hoyDiv = document.getElementById("vencimientosHoy");
-      hoyDiv.innerHTML = vencimientos.length ? vencimientos.join("<br>") : "Sin vencimientos hoy.";
-    }
 
-    function actualizarCalendario() {
-      const grid = document.getElementById("calendarioGrid");
-      const mesActual = document.getElementById("mesActual");
-      grid.innerHTML = "";
-
-      const hoy = new Date();
-      const year = hoy.getFullYear();
-      const month = hoy.getMonth();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const nombreMes = hoy.toLocaleString('es-ES', { month: 'long' });
-
-      mesActual.innerText = `${nombreMes.toUpperCase()} ${year}`;
-
-      for (let i = 1; i <= daysInMonth; i++) {
-        const fecha = new Date(year, month, i).toISOString().split('T')[0];
-        const vencimientos = [];
-
-        clientes.forEach((c, ci) => {
-          c.vencimientos.forEach((v, vi) => {
-            if (v.fecha === fecha && v.estado !== "Pagada") {
-              vencimientos.push({ nombre: c.nombre, cuota: v.cuota, monto: v.monto, estado: v.estado, ci, vi });
-            }
-          });
-        });
-
-        const day = document.createElement("div");
-        day.className = "day " + (fecha === hoy.toISOString().split('T')[0] ? "highlight" : "");
-        day.innerHTML = `<div>${i}</div>${vencimientos.length ? `<div style="color:var(--primary); font-size:0.8em;">🔔 ${vencimientos.length}</div>` : ""}`;
-        if (vencimientos.length) {
-          day.onclick = () => mostrarVencimientosDia(fecha, vencimientos);
-        }
-        grid.appendChild(day);
+      const day = document.createElement("div");
+      day.className = "day";
+      day.innerHTML = `<div>${i}</div>${vencimientos.length ? `<div style="color:var(--primary); font-size:0.8em;">🔔 ${vencimientos.length}</div>` : ""}`;
+      if (vencimientos.length) {
+        day.onclick = () => mostrarVencimientosDia(fecha, vencimientos);
       }
+      grid.appendChild(day);
     }
+  }
 
-    function mostrarVencimientosDia(fecha, vencimientos) {
-      const modal = document.getElementById("modal");
-      const content = document.getElementById("modalContent");
-      content.innerHTML = `<h3>Vencimientos del ${fecha}</h3>`;
-      vencimientos.forEach(v => {
-        content.innerHTML += `
-          <div>
-            ${v.nombre} - Cuota ${v.cuota} - $${v.monto.toLocaleString()}
-            <span class="status ${v.estado.toLowerCase()}">${v.estado}</span>
-            ${v.estado !== "Pagada" ? `<button onclick="marcarPagada(${v.ci}, ${v.vi})">✅ Pagar</button>` : ""}
-          </div>
-        `;
+  function mostrarVencimientosDia(fecha, vencimientos) {
+    const modal = document.getElementById("modal");
+    const content = document.getElementById("modalContent");
+    content.innerHTML = `<h3>Vencimientos del ${fecha}</h3>`;
+    vencimientos.forEach(v => {
+      content.innerHTML +=      content.innerHTML += `
+        <div>
+          ${v.nombre} - Cuota ${v.cuota} - $${v.monto.toLocaleString()}
+          <span class="status ${v.estado.toLowerCase()}">${v.estado}</span>
+          ${v.estado !== "Pagada" ? `<button onclick="marcarPagada(${v.ci}, ${v.vi})">✅ Pagar</button>` : ""}
+        </div>
+      `;
+    });
+    content.innerHTML += `<br><button onclick="cerrarModal()">Cerrar</button>`;
+    modal.style.display = "flex";
+  }
+
+  function generarMensajeWhatsApp(cliente, vencimiento) {
+    return `📢 Hola ${cliente.nombre}, te recordamos que el día ${vencimiento.fecha} vence tu cuota número ${vencimiento.cuota} de $${vencimiento.monto.toLocaleString()} 💵.
+
+📌 Estado actual: ${vencimiento.estado}
+📞 Contacto: ${cliente.whatsapp}
+
+Gracias por confiar en MiNegocio 🙌`;
+  }
+
+  function verificarNotificaciones() {
+    const hoy = new Date();
+    const aviso = new Date(hoy);
+    aviso.setDate(hoy.getDate() + 3);
+    const fechaAviso = aviso.toISOString().split('T')[0];
+
+    clientes.forEach(c => {
+      c.vencimientos.forEach(v => {
+        if (v.fecha === fechaAviso && v.estado === "Pendiente") {
+          const mensaje = generarMensajeWhatsApp(c, v);
+          console.log("📲 WhatsApp:", mensaje);
+          // Aquí podrías integrar una API externa para enviar el mensaje
+        }
       });
-      content.innerHTML += `<br><button onclick="cerrarModal()">Cerrar</button>`;
-      modal.style.display = "flex";
-    }
+    });
+  }
 
-    window.onload = () => {
-      actualizarCalendario();
-    };
-  </script>
+  window.onload = () => {
+    actualizarCalendario();
+    verificarNotificaciones();
+  };
+</script>
 </body>
 </html>
+

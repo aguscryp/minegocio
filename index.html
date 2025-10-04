@@ -1,116 +1,124 @@
-<style>
-  * {
-    box-sizing: border-box;
-  }
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: #f4f4f4;
-    width: 100%;
-    overflow-x: hidden;
-  }
-  header {
-    background: #007bff;
-    color: white;
-    padding: 10px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  header h1 {
-    margin: 0;
-    font-size: 20px;
-  }
-  nav {
-    display: none;
-    flex-direction: column;
-    background: #0056b3;
-  }
-  nav a {
-    color: white;
-    padding: 10px 20px;
-    text-decoration: none;
-    border-top: 1px solid #007bff;
-  }
-  nav a:hover {
-    background: #004494;
-  }
-  .menu-toggle {
-    font-size: 24px;
-    cursor: pointer;
-  }
-  .container {
-    padding: 20px;
-    max-width: 100%;
-    margin: auto;
-    background: white;
-    border-radius: 10px;
-  }
-  h2 {
-    text-align: center;
-    color: #333;
-  }
-  form {
-    display: grid;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  input, textarea {
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    width: 100%;
-  }
-  button {
-    padding: 10px;
-    background: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  button:hover {
-    background: #218838;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-  }
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    font-size: 14px;
-  }
-  th {
-    background: #007bff;
-    color: white;
-  }
-  .total {
-    font-weight: bold;
-    margin-top: 10px;
-    text-align: right;
-  }
-  @media (max-width: 600px) {
-    table, thead, tbody, th, td, tr {
-      display: block;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Control Celulares</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #e9ecef;
+      color: #333;
+    }
+    header {
+      background: #003366;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+    .menu-toggle {
+      font-size: 24px;
+      cursor: pointer;
+    }
+    nav {
+      display: none;
+      flex-direction: column;
+      background: #002244;
+    }
+    nav a {
+      color: white;
+      padding: 12px 20px;
+      text-decoration: none;
+      border-top: 1px solid #003366;
+    }
+    nav a:hover {
+      background: #001122;
+    }
+    .container {
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #003366;
+      margin-bottom: 20px;
+    }
+    form {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input, textarea {
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 100%;
+    }
+    button {
+      padding: 10px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #218838;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      font-size: 14px;
     }
     th {
-      background: #007bff;
+      background: #003366;
       color: white;
-      padding: 10px;
     }
-    td {
-      padding: 10px;
+    .total {
+      font-weight: bold;
+      margin-top: 10px;
+      text-align: right;
+    }
+    .whatsapp-btn {
+      background: #25D366;
+      color: white;
       border: none;
-      border-bottom: 1px solid #ddd;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
     }
-  }
-</style>
+    @media (max-width: 600px) {
+      nav a { text-align: center; }
+      form, table { font-size: 14px; }
+      .container { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
 
 <header>
-  <h1>📱 Control Celulares</h1>
+  <h1><i class="fas fa-mobile-alt"></i> Control Celulares</h1>
   <div class="menu-toggle" onclick="toggleMenu()">☰</div>
 </header>
 <nav id="menu">
@@ -174,6 +182,7 @@
         <th>Cliente</th>
         <th>WhatsApp</th>
         <th>Fecha</th>
+        <th>Acción</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -192,6 +201,49 @@
   const vencimientosTable = document.querySelector('#vencimientosTable tbody');
 
   let total = 0;
+  let ventas = JSON.parse(localStorage.getItem('ventas')) || [];
+
+  function renderVentas() {
+    ventasTable.innerHTML = '';
+    vencimientosTable.innerHTML = '';
+    total = 0;
+    const hoy = new Date().toISOString().split('T')[0];
+
+    ventas.forEach(v => {
+      const row = document.createElement('tr');
+      [v.nombre, v.dni, v.whatsapp, v.celular, v.cuotas, `$${v.monto.toFixed(2)}`, v.fechas.join(', ')].forEach(val => {
+        const cell = document.createElement('td');
+        cell.textContent = val;
+        row.appendChild(cell);
+      });
+      ventasTable.appendChild(row);
+      total += v.monto * v.cuotas;
+
+      v.fechas.forEach(f => {
+        if (f.trim() === hoy) {
+          const vencRow = document.createElement('tr');
+          [v.nombre, v.whatsapp, f].forEach(val => {
+            const cell = document.createElement('td');
+            cell.textContent = val;
+            vencRow.appendChild(cell);
+          });
+          const actionCell = document.createElement('td');
+          const btn = document.createElement('button');
+          btn.className = 'whatsapp-btn';
+          btn.textContent = 'Enviar';
+          btn.onclick = () => {
+            const mensaje = `Hola ${v.nombre}, recordá que hoy vence tu cuota del celular.`;
+            window.open(`https://wa.me/${v.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(mensaje)}`);
+          };
+          actionCell.appendChild(btn);
+          vencRow.appendChild(actionCell);
+          vencimientosTable.appendChild(vencRow);
+        }
+      });
+    });
+
+    totalVentas.textContent = `💰 Total de todas las cuotas: $${total.toFixed(2)}`;
+  }
 
   ventaForm.addEventListener('submit', function(e) {
     e.preventDefault();
@@ -202,53 +254,4 @@
     const celular = inputs[3].value;
     const cuotas = parseInt(inputs[4].value);
     const monto = parseFloat(inputs[5].value);
-    const fechas = inputs[6].value.split(',');
-
-    const row = document.createElement('tr');
-    [nombre, dni, whatsapp, celular, cuotas, `$${monto.toFixed(2)}`, fechas.join(', ')].forEach(val => {
-      const cell = document.createElement('td');
-      cell.textContent = val;
-      row.appendChild(cell);
-    });
-    ventasTable.appendChild(row);
-
-    const hoy = new Date().toISOString().split('T')[0];
-    fechas.forEach(fecha => {
-      const f = fecha.trim();
-      if (f === hoy) {
-        const vencRow = document.createElement('tr');
-        [nombre, whatsapp, f].forEach(val => {
-          const cell = document.createElement('td');
-          cell.textContent = val;
-          vencRow.appendChild(cell);
-        });
-        vencimientosTable.appendChild(vencRow);
-      }
-    });
-
-    total += monto * cuotas;
-    totalVentas.textContent = `💰 Total de todas las cuotas: $${total.toFixed(2)}`;
-
-    inputs.forEach(input => input.value = '');
-  });
-
-  const encargueForm = document.getElementById('encargueForm');
-  const encarguesTable = document.querySelector('#encarguesTable tbody');
-
-  encargueForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const nombre = encargueForm.querySelector('input').value;
-    const detalle = encargueForm.querySelector('textarea').value;
-
-    const row = document.createElement('tr');
-    [nombre, detalle].forEach(val => {
-      const cell = document.createElement('td');
-      cell.textContent = val;
-      row.appendChild(cell);
-    });
-    encarguesTable.appendChild(row);
-
-    encargueForm.querySelector('input').value = '';
-    encargueForm.querySelector('textarea').value = '';
-  });
-</script>
+    const fechas = inputs[6].value.split(',').map(f => f.trim

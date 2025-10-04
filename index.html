@@ -3,27 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MiNegocio - Control Total</title>
+  <title>MiNegocio - Software Empresarial</title>
   <style>
     :root {
-      --color-bg: #f4f6f9;
-      --color-primary: #2563eb;
-      --color-dark: #1f2937;
-      --color-light: #ffffff;
-      --color-accent: #fde68a;
-      --font-main: 'Segoe UI', sans-serif;
+      --bg: #f0f2f5;
+      --primary: #0052cc;
+      --secondary: #172b4d;
+      --accent: #ffab00;
+      --light: #ffffff;
+      --font: 'Segoe UI', sans-serif;
     }
 
     body {
       margin: 0;
-      font-family: var(--font-main);
-      background: var(--color-bg);
-      color: #333;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--secondary);
     }
 
     header {
-      background: var(--color-dark);
-      color: var(--color-light);
+      background: var(--primary);
+      color: var(--light);
       padding: 1em;
       display: flex;
       justify-content: space-between;
@@ -36,36 +36,42 @@
     }
 
     nav {
-      display: none;
-      background: #111827;
-      color: var(--color-light);
+      background: var(--secondary);
+      color: var(--light);
       padding: 1em;
+      display: none;
     }
 
     nav a {
       display: block;
-      color: var(--color-light);
+      color: var(--light);
       text-decoration: none;
       margin: 0.5em 0;
+      font-weight: bold;
+      cursor: pointer;
     }
 
     .container {
-      padding: 1em;
-      max-width: 900px;
+      padding: 2em;
+      max-width: 1000px;
       margin: auto;
     }
 
     section {
-      margin-bottom: 2em;
+      display: none;
+    }
+
+    section.active {
+      display: block;
     }
 
     h2 {
-      margin-bottom: 0.5em;
-      color: var(--color-dark);
+      color: var(--primary);
+      margin-bottom: 1em;
     }
 
     input, select {
-      padding: 0.5em;
+      padding: 0.6em;
       margin: 0.5em 0;
       width: 100%;
       box-sizing: border-box;
@@ -75,8 +81,8 @@
 
     button {
       padding: 0.7em 1.2em;
-      background: var(--color-primary);
-      color: var(--color-light);
+      background: var(--primary);
+      color: var(--light);
       border: none;
       border-radius: 4px;
       cursor: pointer;
@@ -84,11 +90,11 @@
     }
 
     button:hover {
-      background: #1d4ed8;
+      background: #003d99;
     }
 
     .card {
-      background: var(--color-light);
+      background: var(--light);
       padding: 1em;
       margin: 1em 0;
       border-radius: 8px;
@@ -103,7 +109,7 @@
     }
 
     .day {
-      background: var(--color-light);
+      background: var(--light);
       padding: 1em;
       text-align: center;
       border-radius: 6px;
@@ -112,31 +118,32 @@
     }
 
     .highlight {
-      background: var(--color-accent);
+      background: var(--accent);
     }
 
     .calendar-header {
       text-align: center;
       font-weight: bold;
       margin-bottom: 1em;
+      font-size: 1.2em;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>📱 MiNegocio</h1>
+    <h1>📊 MiNegocio</h1>
     <div class="menu-toggle" onclick="toggleMenu()">☰</div>
   </header>
   <nav id="menu">
-    <a href="#hoy">HOY</a>
-    <a href="#clientes">Clientes</a>
-    <a href="#facturacion">Facturación</a>
-    <a href="#calendario">Calendario</a>
+    <a onclick="mostrarSeccion('clientes')">Clientes</a>
+    <a onclick="mostrarSeccion('facturacion')">Facturación</a>
+    <a onclick="mostrarSeccion('hoy')">Vencimientos Hoy</a>
+    <a onclick="mostrarSeccion('calendario')">Calendario</a>
   </nav>
 
   <div class="container">
-    <section id="clientes">
-      <h2>📋 Cargar Cliente</h2>
+    <section id="clientes" class="active">
+      <h2>👥 Gestión de Clientes</h2>
       <input type="text" id="nombre" placeholder="Nombre y Apellido" />
       <input type="text" id="dni" placeholder="DNI" />
       <input type="text" id="whatsapp" placeholder="WhatsApp" />
@@ -147,18 +154,18 @@
     </section>
 
     <section id="facturacion">
-      <h2>💰 Facturación Total</h2>
+      <h2>💼 Facturación Total</h2>
       <div id="totalFacturacion">Total: $0</div>
       <div id="listaClientes"></div>
     </section>
 
     <section id="hoy">
-      <h2>📆 Vencimientos de Hoy</h2>
+      <h2>📅 Vencimientos de Hoy</h2>
       <div id="vencimientosHoy"></div>
     </section>
 
     <section id="calendario">
-      <h2>🗓️ Calendario</h2>
+      <h2>🗓️ Calendario Mensual</h2>
       <div class="calendar-header" id="mesActual"></div>
       <div class="calendar" id="calendarioGrid"></div>
     </section>
@@ -171,6 +178,12 @@
     function toggleMenu() {
       const menu = document.getElementById("menu");
       menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
+    function mostrarSeccion(id) {
+      document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      document.getElementById("menu").style.display = "none";
     }
 
     function agregarCliente() {
@@ -202,6 +215,7 @@
 
       clientes.push(cliente);
       actualizarVista();
+      mostrarSeccion('facturacion');
     }
 
     function actualizarVista() {
@@ -245,7 +259,6 @@
       const grid = document.getElementById("calendarioGrid");
       const mesActual = document.getElementById("mesActual");
       grid.innerHTML = "";
-
       const hoy = new Date();
       const year = hoy.getFullYear();
       const month = hoy.getMonth();
@@ -257,7 +270,8 @@
       for (let i = 1; i <= daysInMonth; i++) {
         const fecha = new Date(year, month, i).toISOString().split('T')[0];
         const vencimientos = [];
-               clientes.forEach(c => {
+
+        clientes.forEach(c => {
           c.vencimientos.forEach(v => {
             if (v.fecha === fecha) vencimientos.push(c.nombre);
           });
@@ -267,7 +281,7 @@
         day.className = "day " + (fecha === hoy.toISOString().split('T')[0] ? "highlight" : "");
         day.innerHTML = `
           <div>${i}</div>
-          ${vencimientos.length ? `<div style="color:#2563eb; font-size:0.8em;">${vencimientos.join(", ")}</div>` : ""}
+          ${vencimientos.length ? `<div style="color:var(--primary); font-size:0.8em;">${vencimientos.join(", ")}</div>` : ""}
         `;
         grid.appendChild(day);
       }
@@ -279,4 +293,5 @@
   </script>
 </body>
 </html>
+
 

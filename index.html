@@ -12,6 +12,8 @@
       --accent: #ffab00;
       --light: #ffffff;
       --font: 'Segoe UI', sans-serif;
+      --success: #36b37e;
+      --danger: #ff5630;
     }
 
     body {
@@ -99,6 +101,22 @@
       margin: 1em 0;
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .card-actions {
+      position: absolute;
+      top: 1em;
+      right: 1em;
+      display: flex;
+      gap: 0.5em;
+    }
+
+    .card-actions button {
+      background: var(--accent);
+      color: var(--secondary);
+      font-size: 0.8em;
+      padding: 0.3em 0.6em;
     }
 
     .calendar {
@@ -115,6 +133,7 @@
       border-radius: 6px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       font-size: 0.9em;
+      cursor: pointer;
     }
 
     .highlight {
@@ -127,6 +146,39 @@
       margin-bottom: 1em;
       font-size: 1.2em;
     }
+
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: var(--light);
+      padding: 2em;
+      border-radius: 8px;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .modal-content h3 {
+      margin-top: 0;
+    }
+
+    .status {
+      font-weight: bold;
+      padding: 0.2em 0.5em;
+      border-radius: 4px;
+      font-size: 0.8em;
+    }
+
+    .pendiente { background: #ffeeba; color: #856404; }
+    .pagada { background: var(--success); color: white; }
+    .vencida { background: var(--danger); color: white; }
   </style>
 </head>
 <body>
@@ -142,6 +194,7 @@
   </nav>
 
   <div class="container">
+    <!-- Secciones dinámicas aquí -->
     <section id="clientes" class="active">
       <h2>👥 Gestión de Clientes</h2>
       <input type="text" id="nombre" placeholder="Nombre y Apellido" />
@@ -171,127 +224,9 @@
     </section>
   </div>
 
-  <script>
-    let clientes = [];
-    let totalFacturado = 0;
-
-    function toggleMenu() {
-      const menu = document.getElementById("menu");
-      menu.style.display = menu.style.display === "block" ? "none" : "block";
-    }
-
-    function mostrarSeccion(id) {
-      document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-      document.getElementById("menu").style.display = "none";
-    }
-
-    function agregarCliente() {
-      const nombre = document.getElementById("nombre").value;
-      const dni = document.getElementById("dni").value;
-      const whatsapp = document.getElementById("whatsapp").value;
-      const cuotas = parseInt(document.getElementById("cuotas").value);
-      const montoCuota = parseFloat(document.getElementById("montoCuota").value);
-      const fechaInicio = new Date(document.getElementById("fechaInicio").value);
-
-      if (!nombre || !dni || !whatsapp || !cuotas || !montoCuota || isNaN(fechaInicio)) {
-        return alert("Completa todos los campos correctamente");
-      }
-
-      const cliente = {
-        nombre, dni, whatsapp, cuotas, montoCuota, vencimientos: []
-      };
-
-      for (let i = 0; i < cuotas; i++) {
-        const fecha = new Date(fechaInicio);
-        fecha.setMonth(fecha.getMonth() + i);
-        cliente.vencimientos.push({
-          cuota: i + 1,
-          fecha: fecha.toISOString().split('T')[0],
-          monto: montoCuota
-        });
-        totalFacturado += montoCuota;
-      }
-
-      clientes.push(cliente);
-      actualizarVista();
-      mostrarSeccion('facturacion');
-    }
-
-    function actualizarVista() {
-      document.getElementById("totalFacturacion").innerText = `Total: $${totalFacturado.toLocaleString()}`;
-      const lista = document.getElementById("listaClientes");
-      lista.innerHTML = "";
-      clientes.forEach(c => {
-        const card = document.createElement("div");
-        card.className = "card";
-        const totalCliente = c.montoCuota * c.cuotas;
-        card.innerHTML = `
-          <strong>${c.nombre}</strong><br>
-          DNI: ${c.dni}<br>
-          WhatsApp: ${c.whatsapp}<br>
-          Cuotas: ${c.cuotas} x $${c.montoCuota.toLocaleString()}<br>
-          Total: $${totalCliente.toLocaleString()}<br><br>
-          ${c.vencimientos.map(v => `Cuota ${v.cuota}: ${v.fecha} - $${v.monto.toLocaleString()}`).join("<br>")}
-        `;
-        lista.appendChild(card);
-      });
-
-      actualizarVencimientosHoy();
-      actualizarCalendario();
-    }
-
-    function actualizarVencimientosHoy() {
-      const hoy = new Date().toISOString().split('T')[0];
-      const vencimientos = [];
-      clientes.forEach(c => {
-        c.vencimientos.forEach(v => {
-          if (v.fecha === hoy) {
-            vencimientos.push(`${c.nombre} - Cuota ${v.cuota} - $${v.monto.toLocaleString()}`);
-          }
-        });
-      });
-      const hoyDiv = document.getElementById("vencimientosHoy");
-      hoyDiv.innerHTML = vencimientos.length ? vencimientos.join("<br>") : "Sin vencimientos hoy.";
-    }
-
-    function actualizarCalendario() {
-      const grid = document.getElementById("calendarioGrid");
-      const mesActual = document.getElementById("mesActual");
-      grid.innerHTML = "";
-      const hoy = new Date();
-      const year = hoy.getFullYear();
-      const month = hoy.getMonth();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const nombreMes = hoy.toLocaleString('es-ES', { month: 'long' });
-
-      mesActual.innerText = `${nombreMes.toUpperCase()} ${year}`;
-
-      for (let i = 1; i <= daysInMonth; i++) {
-        const fecha = new Date(year, month, i).toISOString().split('T')[0];
-        const vencimientos = [];
-
-        clientes.forEach(c => {
-          c.vencimientos.forEach(v => {
-            if (v.fecha === fecha) vencimientos.push(c.nombre);
-          });
-        });
-
-        const day = document.createElement("div");
-        day.className = "day " + (fecha === hoy.toISOString().split('T')[0] ? "highlight" : "");
-        day.innerHTML = `
-          <div>${i}</div>
-          ${vencimientos.length ? `<div style="color:var(--primary); font-size:0.8em;">${vencimientos.join(", ")}</div>` : ""}
-        `;
-        grid.appendChild(day);
-      }
-    }
-
-    window.onload = () => {
-      actualizarCalendario();
-    };
-  </script>
-</body>
-</html>
-
-
+  <!-- Modal para edición y cuotas -->
+  <div class="modal" id="modal">
+    <div class="modal-content" id="modalContent">
+      <!-- Se llena dinámicamente -->
+    </div>
+  </div>

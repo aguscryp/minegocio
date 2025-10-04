@@ -15,6 +15,7 @@
       --success: #36b37e;
       --danger: #ff5630;
       --info: #00b8d9;
+      --pending: #ffeeba;
     }
 
     body {
@@ -41,6 +42,11 @@
     .menu-toggle {
       font-size: 1.5em;
       cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .menu-toggle:hover {
+      transform: rotate(90deg);
     }
 
     nav {
@@ -84,7 +90,13 @@
       width: 100%;
       box-sizing: border-box;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 6px;
+      transition: border 0.3s;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      outline: none;
     }
 
     button {
@@ -92,7 +104,7 @@
       background: var(--primary);
       color: var(--light);
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
       transition: background 0.3s;
     }
@@ -108,13 +120,17 @@
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       position: relative;
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.01);
     }
 
     .card-actions {
-      position: absolute;
-      top: 1em;
-      right: 1em;
+      margin-top: 1em;
       display: flex;
+      flex-wrap: wrap;
       gap: 0.5em;
     }
 
@@ -122,7 +138,8 @@
       background: var(--accent);
       color: var(--secondary);
       font-size: 0.8em;
-      padding: 0.3em 0.6em;
+      padding: 0.4em 0.8em;
+      border-radius: 4px;
     }
 
     .calendar {
@@ -146,6 +163,11 @@
       background: var(--accent);
     }
 
+    .task-day {
+      background: var(--info);
+      color: white;
+    }
+
     .calendar-header {
       text-align: center;
       font-weight: bold;
@@ -161,6 +183,7 @@
       display: none;
       justify-content: center;
       align-items: center;
+      z-index: 999;
     }
 
     .modal-content {
@@ -171,10 +194,6 @@
       width: 100%;
     }
 
-    .modal-content h3 {
-      margin-top: 0;
-    }
-
     .status {
       font-weight: bold;
       padding: 0.2em 0.5em;
@@ -182,9 +201,29 @@
       font-size: 0.8em;
     }
 
-    .pendiente { background: #ffeeba; color: #856404; }
+    .pendiente { background: var(--pending); color: #856404; }
     .pagada { background: var(--success); color: white; }
     .vencida { background: var(--danger); color: white; }
+
+    .alerta {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--success);
+      color: white;
+      padding: 1em 1.5em;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      animation: fadeInOut 3s ease forwards;
+      z-index: 1000;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(-20px); }
+      10% { opacity: 1; transform: translateY(0); }
+      90% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-20px); }
+    }
   </style>
 </head>
 <body>
@@ -201,7 +240,7 @@
   </nav>
   <div class="container">
     <section id="clientes" class="active">
-      <h2>👥 Gestión de Clientes</h2>
+      <h2>👥 Registro de Cliente</h2>
       <input type="text" id="nombre" placeholder="Nombre y Apellido" />
       <input type="text" id="dni" placeholder="DNI" />
       <input type="text" id="whatsapp" placeholder="WhatsApp" />
@@ -213,6 +252,7 @@
 
     <section id="facturacion">
       <h2>💼 Facturación Total</h2>
+      <input type="text" id="busqueda" placeholder="Buscar cliente..." oninput="filtrarClientes()" />
       <div id="totalFacturacion">Total: $0</div>
       <div id="listaClientes"></div>
     </section>
@@ -233,14 +273,19 @@
     </section>
 
     <section id="deposito">
+      <h2    <section id="deposito">
       <h2>📦 Clientes en Depósito</h2>
       <div id="listaDeposito"></div>
     </section>
   </div>
 
+  <!-- Modal para edición, cuotas, vencimientos -->
   <div class="modal" id="modal">
     <div class="modal-content" id="modalContent"></div>
   </div>
+
+  <!-- Alerta animada -->
+  <div id="alerta" class="alerta" style="display:none;">🎉 Cliente agregado con éxito</div>
 <script>
   let clientes = [];
   let deposito = [];
@@ -257,6 +302,13 @@
     document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
     document.getElementById(id).classList.add("active");
     document.getElementById("menu").style.display = "none";
+  }
+
+  function mostrarAlerta(texto) {
+    const alerta = document.getElementById("alerta");
+    alerta.innerText = texto;
+    alerta.style.display = "block";
+    setTimeout(() => alerta.style.display = "none", 3000);
   }
 
   function agregarCliente() {
@@ -291,6 +343,7 @@
     limpiarFormulario();
     actualizarVista();
     mostrarSeccion('facturacion');
+    mostrarAlerta("🎉 Cliente agregado con éxito");
   }
 
   function limpiarFormulario() {
@@ -307,17 +360,25 @@
       const card = document.createElement("div");
       card.className = "card";
       const totalCliente = c.montoCuota * c.cuotas;
+      const vencimientoProximo = c.vencimientos.find(v => v.estado === "Pendiente");
+      const fechaHoy = new Date().toISOString().split('T')[0];
+      const fechaDosDias = new Date();
+      fechaDosDias.setDate(new Date().getDate() + 2);
+      const fechaDosDiasStr = fechaDosDias.toISOString().split('T')[0];
+
       card.innerHTML = `
-        <div class="card-actions">
-          <button onclick="editarCliente(${index})">✏️ Editar</button>
-          <button onclick="verCuotas(${index})">📄 Cuotas</button>
-          <button onclick="moverADeposito(${index})">📦 Depositar</button>
-        </div>
         <strong>👤 ${c.nombre}</strong><br>
         DNI: ${c.dni}<br>
         WhatsApp: ${c.whatsapp}<br>
         Cuotas: ${c.cuotas} x $${c.montoCuota.toLocaleString()}<br>
         Total: $${totalCliente.toLocaleString()}
+        <div class="card-actions">
+          <button onclick="editarCliente(${index})">✏️ Editar</button>
+          <button onclick="verCuotas(${index})">📄 Cuotas</button>
+          <button onclick="moverADeposito(${index})">📦 Depositar</button>
+          <button onclick="contactarCliente(${index})">📲 Contactar</button>
+          ${vencimientoProximo && vencimientoProximo.fecha === fechaDosDiasStr ? `<button onclick="notificarCliente(${index})">🔔 Notificar</button>` : ""}
+        </div>
       `;
       lista.appendChild(card);
     });
@@ -325,6 +386,18 @@
     actualizarVencimientosHoy();
     actualizarCalendario();
     actualizarDeposito();
+  }
+
+  function contactarCliente(index) {
+    const c = clientes[index];
+    alert(`📲 Contactar a ${c.nombre} por WhatsApp: ${c.whatsapp}`);
+  }
+
+  function notificarCliente(index) {
+    const c = clientes[index];
+    const v = c.vencimientos.find(v => v.estado === "Pendiente");
+    const mensaje = `📢 Hola ${c.nombre}, recordá que el ${v.fecha} vence tu cuota ${v.cuota} de $${v.monto.toLocaleString()} 💵.`;
+    alert("Mensaje para enviar:\n\n" + mensaje);
   }
 
   function editarCliente(index) {
@@ -408,7 +481,9 @@
       });
     });
     const hoyDiv = document.getElementById("vencimientosHoy");
-    hoyDiv.innerHTML = vencimientos.length ? vencimientos.join("<br>") : "Sin vencimientos hoy.";
+    hoyDiv.innerHTML = vencimientos.length ?    hoyDiv.innerHTML = vencimientos.length
+      ? vencimientos.join("<br>")
+      : "Sin vencimientos hoy.";
   }
 
   function cambiarMes(direccion) {
@@ -433,18 +508,23 @@
     for (let i = 1; i <= daysInMonth; i++) {
       const fecha = new Date(year, month, i).toISOString().split('T')[0];
       const vencimientos = [];
+      const tareas = [];
 
       clientes.forEach((c, ci) => {
         c.vencimientos.forEach((v, vi) => {
           if (v.fecha === fecha && v.estado !== "Pagada") {
             vencimientos.push({ nombre: c.nombre, cuota: v.cuota, monto: v.monto, estado: v.estado, ci, vi });
+            if (v.estado === "Pendiente") tareas.push(`${c.nombre} - Cuota ${v.cuota}`);
           }
         });
       });
 
       const day = document.createElement("div");
       day.className = "day";
-      day.innerHTML = `<div>${i}</div>${vencimientos.length ? `<div style="color:var(--primary); font-size:0.8em;">🔔 ${vencimientos.length}</div>` : ""}`;
+      if (fecha === new Date().toISOString().split('T')[0]) day.classList.add("highlight");
+      if (tareas.length) day.classList.add("task-day");
+
+      day.innerHTML = `<div>${i}</div>${vencimientos.length ? `<div style="font-size:0.8em;">🔔 ${vencimientos.length}</div>` : ""}`;
       if (vencimientos.length) {
         day.onclick = () => mostrarVencimientosDia(fecha, vencimientos);
       }
@@ -457,7 +537,7 @@
     const content = document.getElementById("modalContent");
     content.innerHTML = `<h3>Vencimientos del ${fecha}</h3>`;
     vencimientos.forEach(v => {
-      content.innerHTML +=      content.innerHTML += `
+      content.innerHTML += `
         <div>
           ${v.nombre} - Cuota ${v.cuota} - $${v.monto.toLocaleString()}
           <span class="status ${v.estado.toLowerCase()}">${v.estado}</span>
@@ -469,35 +549,18 @@
     modal.style.display = "flex";
   }
 
-  function generarMensajeWhatsApp(cliente, vencimiento) {
-    return `📢 Hola ${cliente.nombre}, te recordamos que el día ${vencimiento.fecha} vence tu cuota número ${vencimiento.cuota} de $${vencimiento.monto.toLocaleString()} 💵.
-
-📌 Estado actual: ${vencimiento.estado}
-📞 Contacto: ${cliente.whatsapp}
-
-Gracias por confiar en MiNegocio 🙌`;
-  }
-
-  function verificarNotificaciones() {
-    const hoy = new Date();
-    const aviso = new Date(hoy);
-    aviso.setDate(hoy.getDate() + 3);
-    const fechaAviso = aviso.toISOString().split('T')[0];
-
-    clientes.forEach(c => {
-      c.vencimientos.forEach(v => {
-        if (v.fecha === fechaAviso && v.estado === "Pendiente") {
-          const mensaje = generarMensajeWhatsApp(c, v);
-          console.log("📲 WhatsApp:", mensaje);
-          // Aquí podrías integrar una API externa para enviar el mensaje
-        }
-      });
+  function filtrarClientes() {
+    const texto = document.getElementById("busqueda").value.toLowerCase();
+    const cards = document.querySelectorAll("#listaClientes .card");
+    cards.forEach(card => {
+      const contenido = card.innerText.toLowerCase();
+      card.style.display = contenido.includes(texto) ? "block" : "none";
     });
   }
 
   window.onload = () => {
     actualizarCalendario();
-    verificarNotificaciones();
+    actualizarVista();
   };
 </script>
 </body>
